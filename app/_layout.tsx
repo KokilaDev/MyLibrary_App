@@ -3,14 +3,20 @@ import React from "react";
 import { Slot } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import "../global.css";
+import { LoaderProvider } from "@/context/LoaderContext";
+import { AuthProvider } from "@/context/AuthContext";
 
 const RootLayout = () => {
   const insets = useSafeAreaInsets();
 
   return (
-    <View className="flex-1" style={{ paddingTop: insets.top }}>
-      <Slot />
-    </View>
+    <LoaderProvider>
+      <AuthProvider>
+        <View style={{ marginTop: insets.top, flex: 1 }}>
+          <Slot />
+        </View>
+      </AuthProvider>
+    </LoaderProvider>
   )
 };
 
