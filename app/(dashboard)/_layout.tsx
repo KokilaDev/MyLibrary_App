@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { Tabs } from "expo-router";
-import { Text, View, TouchableOpacity, Pressable } from "react-native";
+import { Text, View, Pressable } from "react-native";
 import Animated, { useAnimatedStyle, withSpring } from "react-native-reanimated";
 
 const tabs = [
