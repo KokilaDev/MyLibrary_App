@@ -38,13 +38,15 @@ const ManageBook = () => {
           />
         </View>
 
-        <TextInput
-          placeholder="Write your story here..."
-          placeholderTextColor="#999"
-          multiline
-          textAlignVertical="top"
-          style={styles.storyInput}
-        />
+        <ScrollView>
+          <TextInput
+            placeholder="Write your story here..."
+            placeholderTextColor="#999"
+            multiline
+            textAlignVertical="top"
+            style={styles.storyInput}
+          />
+        </ScrollView>
 
       </View>
     </SafeAreaView>
