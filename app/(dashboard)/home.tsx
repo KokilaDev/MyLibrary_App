@@ -1,7 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, View, ScrollView, Image, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, Bell, Settings, Library, Bookmark, Sparkles, BookOpen, Atom, GraduationCap, ChevronRight } from 'lucide-react-native';
+import { Search, Bell, Library, Bookmark, Sparkles, BookOpen, Atom, GraduationCap, ChevronRight } from 'lucide-react-native';
 import { Link, useRouter } from 'expo-router';
 
 const Home = () => {
