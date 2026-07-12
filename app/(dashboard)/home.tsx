@@ -2,9 +2,11 @@ import React from 'react';
 import { StyleSheet, Text, View, ScrollView, Image, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Bell, Settings, Library, Bookmark, Sparkles, BookOpen, Atom, GraduationCap, ChevronRight } from 'lucide-react-native';
-import { Link } from 'expo-router';
+import { Link, useRouter } from 'expo-router';
 
 const Home = () => {
+  const router = useRouter();
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -19,11 +21,6 @@ const Home = () => {
               <TouchableOpacity style={styles.notificationBtn}>
                 <Bell size={20} color="#999999" />
                 <View style={styles.badge} />
-              </TouchableOpacity>
-            </Link>
-            <Link href="/settings" asChild>
-              <TouchableOpacity style={styles.notificationBtn}>
-                <Settings size={20} color="#999999" />
               </TouchableOpacity>
             </Link>
             <Link href="/profile" asChild>
@@ -78,7 +75,10 @@ const Home = () => {
           </Link>
         </View>
 
-        <View style={styles.continueCard}>
+        <TouchableOpacity 
+          style={styles.continueCard} 
+          onPress={() => {router.push("/readingArea")}}
+        >
           <View style={styles.continueTextContent}>
             <Text style={styles.continueLabel}>CONTINUE READING</Text>
             <Text style={styles.continueTitle}>The Shadow of Dark Oaks</Text>
@@ -94,7 +94,7 @@ const Home = () => {
               style={styles.miniCoverImage}
             />
           </View>
-        </View>
+        </TouchableOpacity>
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Featured Curations</Text>
@@ -106,7 +106,10 @@ const Home = () => {
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.carousel}>
-          <TouchableOpacity style={styles.featuredBook}>
+          <TouchableOpacity 
+            style={styles.featuredBook}
+            onPress={() => {router.push("/bookDetails")}}
+          >
             <View style={styles.mockCoverLarge}>
               <Image 
                 source={ require("../../assets/books/book_1.jpg") } 
@@ -116,7 +119,10 @@ const Home = () => {
             <Text style={styles.bookTitle} numberOfLines={1}>The Shadow of Dark Oaks</Text>
             <Text style={styles.bookAuthor}>Marguerite Osborne</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.featuredBook}>
+          <TouchableOpacity 
+            style={styles.featuredBook}
+            onPress={() => {router.push("/bookDetails")}}
+          >
             <View style={styles.mockCoverLarge}>
               <Image 
                 source={ require("../../assets/books/book_1.jpg") } 
@@ -126,7 +132,10 @@ const Home = () => {
             <Text style={styles.bookTitle} numberOfLines={1}>The Shadow of Dark Oaks</Text>
             <Text style={styles.bookAuthor}>Marguerite Osborne</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.featuredBook}>
+          <TouchableOpacity 
+            style={styles.featuredBook}
+            onPress={() => {router.push("/bookDetails")}}
+          >
             <View style={styles.mockCoverLarge}>
               <Image 
                 source={ require("../../assets/books/book_1.jpg") } 
@@ -136,7 +145,10 @@ const Home = () => {
             <Text style={styles.bookTitle} numberOfLines={1}>The Shadow of Dark Oaks</Text>
             <Text style={styles.bookAuthor}>Marguerite Osborne</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.featuredBook}>
+          <TouchableOpacity 
+            style={styles.featuredBook}
+            onPress={() => {router.push("/bookDetails")}}
+          >
             <View style={styles.mockCoverLarge}>
               <Image 
                 source={ require("../../assets/books/book_1.jpg") } 
@@ -206,7 +218,11 @@ const Home = () => {
 
         <View style={styles.recentlyAddedContainer}>
           {[1, 2, 3].map((item) => (
-            <TouchableOpacity key={item} style={styles.recentBookCard}>
+            <TouchableOpacity 
+              key={item} 
+              style={styles.recentBookCard}
+              onPress={() => {router.push("/bookDetails")}}
+            >
               <Image
                 source={require("../../assets/books/book_2.jpg")}
                 style={styles.recentBookCover}

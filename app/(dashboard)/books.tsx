@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import { Search } from "lucide-react-native";
 import { useState } from "react";
 import { StyleSheet, SafeAreaView, ScrollView, View, Text, TextInput, TouchableOpacity, Image } from "react-native"
@@ -74,7 +75,11 @@ const Books = () => {
 
         <View style={styles.bookContainer}>
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((item) => (
-            <TouchableOpacity key={item} style={styles.bookCard}>
+            <TouchableOpacity 
+              key={item} 
+              style={styles.bookCard}
+              onPress={() => {router.push("/bookDetails")}}
+            >
               <Image
                 source={require("../../assets/books/book_2.jpg")}
                 style={styles.bookCover}
