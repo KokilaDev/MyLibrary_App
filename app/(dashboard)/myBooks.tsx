@@ -78,7 +78,7 @@ const MyBooks = () => {
                   </View>
                   <View style={styles.divider}></View>
                   <View style={styles.buttonContainer}>
-                    <TouchableOpacity style={styles.button}>
+                    <TouchableOpacity style={styles.button} onPress={() => router.push('/manageBook')}>
                       <Pen size={14} color="#999999" />
                     </TouchableOpacity>
                     <TouchableOpacity style={styles.button}>
