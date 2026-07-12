@@ -1,6 +1,7 @@
 import { Link, useRouter } from "expo-router"
 import { ChevronRight, Clock, LogOut, OptionIcon, Settings } from "lucide-react-native"
-import { View, Text, SafeAreaView, ScrollView, StyleSheet, Image, TouchableOpacity } from "react-native"
+import { View, Text, ScrollView, StyleSheet, Image, TouchableOpacity } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Profile = () => {
   const router = useRouter();

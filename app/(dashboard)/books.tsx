@@ -1,7 +1,8 @@
 import { router } from "expo-router";
 import { Search } from "lucide-react-native";
 import { useState } from "react";
-import { StyleSheet, SafeAreaView, ScrollView, View, Text, TextInput, TouchableOpacity, Image } from "react-native"
+import { StyleSheet, ScrollView, View, Text, TextInput, TouchableOpacity, Image } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context";
 
 const Books = () => {
   const categories = [
