@@ -96,13 +96,13 @@ const BookDetails = () => {
             </View>
             <View style={styles.divider}></View>
             <View style={styles.descriptionCard}>
-              <Text style={styles.descriptionValue}>{bookData?.pages ?? "1"}</Text>
-              <Text style={styles.descriptionLabel}>Pages</Text>
+              <Text style={styles.descriptionValue}>{bookData?.languages?.[0] ?? "English"}</Text>
+              <Text style={styles.descriptionLabel}>Language</Text>
             </View>
             <View style={styles.divider}></View>
             <View style={styles.descriptionCard}>
-              <Text style={styles.descriptionValue}>{bookData?.year ?? "N/A"}</Text>
-              <Text style={styles.descriptionLabel}>Published</Text>
+              <Text style={styles.descriptionValue}>{bookData?.formats?.["text/plain"] ? "Available" : "N/A"}</Text>
+              <Text style={styles.descriptionLabel}>Reading</Text>
             </View>
           </View>
 

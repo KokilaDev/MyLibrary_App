@@ -1,8 +1,36 @@
+import { LoaderContext } from "@/context/LoaderContext";
+import { getBooks } from "@/services/bookService";
+import { useRouter } from "expo-router";
 import { BookOpen, Search } from "lucide-react-native";
-import { ScrollView, StyleSheet, View, Text, TextInput } from "react-native"
+import { useContext, useState } from "react";
+import { ScrollView, StyleSheet, View, Text, TextInput, FlatList, Image, TouchableOpacity } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
 const SearchPage = () => {
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [books, setBooks] = useState<any[]>([]);
+  const { showLoader, hideLoader } = useContext(LoaderContext);
+
+  const searchBooks = async (text: string) => {
+    setSearchQuery(text);
+
+    if (text.trim().length === 0) {
+      setBooks([]);
+      return;
+    }
+
+    try {
+      showLoader();
+      const result = await getBooks(text);
+      setBooks(result);
+    } catch (error) {
+      console.error("Error searching books:", error);
+    } finally {
+      hideLoader();
+    }
+  }
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView style={styles.scrollContent}>
@@ -20,16 +48,47 @@ const SearchPage = () => {
             placeholder="Search for titles, authors, genres..." 
             placeholderTextColor="#999999"
             style={styles.searchInput}
+            value={searchQuery}
+            onChangeText={searchBooks}
           />
         </View>
 
-        <View style={styles.emptyState}>
-          <View style={styles.emptyStateIcon}>
-            <BookOpen size={50} color="#999999" />
+        {books.length === 0 && searchQuery.length === 0 ? (
+          <View style={styles.emptyState}>
+            <View style={styles.emptyStateIcon}>
+              <BookOpen size={50} color="#999999" />
+            </View>
+            <Text style={styles.emptyStateText}>Ready to Browse</Text>
+            <Text style={styles.emptyStateSubtext}>Begin typing to crawl through titles, old manuscripts, authors, or specialized categories.</Text>
           </View>
-          <Text style={styles.emptyStateText}>Ready to Browse</Text>
-          <Text style={styles.emptyStateSubtext}>Begin typing to crawl through titles, old manuscripts, authors, or specialized categories.</Text>
-        </View>
+        ) : (
+          <FlatList
+            data={books}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <TouchableOpacity 
+                style={styles.bookCard}
+                onPress={() => {
+                  router.push({
+                    pathname: "/bookDetails",
+                    params: { 
+                      id: item.id, 
+                    },
+                  });
+                }}
+              >
+                <Image
+                  source={{ uri: item.formats["image/jpeg"] }} 
+                  style={styles.bookImage}
+                />
+                <View>
+                  <Text style={styles.bookTitle}>{item.title}</Text>
+                  <Text style={styles.bookAuthor}>{item.authors?.[0]?.name}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          />
+        )}
 
       </ScrollView>
     </SafeAreaView>
@@ -108,6 +167,31 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     fontFamily: 'Poppins-Regular',
+  },
+  bookCard:{
+    flexDirection:"row",
+    alignItems:"center",
+    backgroundColor:"#f8f8f8",
+    borderRadius:16,
+    padding:12,
+    marginBottom:12,
+  },
+  bookImage:{
+    width:60,
+    height:80,
+    borderRadius:8,
+    marginRight:15,
+  },
+  bookTitle:{
+    fontSize:15,
+    fontWeight:"700",
+    color:"#1A181B",
+    width:220,
+  },
+  bookAuthor:{
+    marginTop:5,
+    fontSize:13,
+    color:"#666",
   },
 });
 

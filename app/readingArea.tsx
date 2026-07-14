@@ -5,6 +5,7 @@ import { ChevronLeft, CircleCheck, MoonIcon, SunIcon } from "lucide-react-native
 import { useContext, useEffect, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
 
 const ReadingArea = () => {
   const router = useRouter();
@@ -58,6 +59,14 @@ const ReadingArea = () => {
       Math.min(Math.max(value, 0), 1)
     );
   }
+
+  const getFontButtonStyle = (size:number) => ({
+    backgroundColor: fontSize === size 
+      ? "#1A181B" 
+      : isDarkMode 
+        ? "#1A181B" 
+        : "#f2f2f2"
+  });
   
   return (
     <SafeAreaView 
@@ -130,31 +139,52 @@ const ReadingArea = () => {
             <TouchableOpacity 
               style={[
                 styles.fontSizeButton,
-                {backgroundColor: isDarkMode ? "#1A181B" : "#f2f2f2"}
+                getFontButtonStyle(14)
               ]}
               onPress={() => setFontSize(14)}
             >
-              <Text style={styles.fontSizeButtonText}>sm</Text>
+              <Text 
+                style={[
+                  styles.fontSizeButtonText,
+                  {color: fontSize === 14 ? "#fff" : "#1A181B"}
+                ]}
+              >
+                sm
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
               style={[
                 styles.fontSizeButton,
-                {backgroundColor: isDarkMode ? "#1A181B" : "#f2f2f2"}
+                getFontButtonStyle(16)
               ]}
               onPress={() => setFontSize(16)}
             >
-              <Text style={styles.fontSizeButtonText}>md</Text>
+              <Text 
+                style={[
+                  styles.fontSizeButtonText,
+                  {color: fontSize === 16 ? "#fff" : "#1A181B"}
+                ]}
+              >
+                md
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity 
               style={[
                 styles.fontSizeButton,
-                {backgroundColor: isDarkMode ? "#1A181B" : "#f2f2f2"}
+                getFontButtonStyle(18)
               ]}
               onPress={() => setFontSize(18)}
             >
-              <Text style={styles.fontSizeButtonText}>lg</Text>
+              <Text 
+                style={[
+                  styles.fontSizeButtonText,
+                  {color: fontSize === 18 ? "#fff" : "#1A181B"}
+                ]}
+              >
+                lg
+              </Text>
             </TouchableOpacity>
 
           </View>
@@ -264,15 +294,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
   },
-  fontSizeButtons: {
-    flexDirection: 'row',
-    backgroundColor: '#f2f2f2',
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  fontSizeButtons:{
+    flexDirection:'row',
+    borderRadius:10,
+    alignItems:'center',
+    justifyContent:'space-between',
+    overflow:'hidden',
   },
   fontSizeButton: {
-    paddingHorizontal: 4,
+    borderRadius: 10,
+    paddingHorizontal: 5,
     paddingVertical: 1,
   },
   fontSizeButtonText: {
