@@ -5,18 +5,7 @@ import { Search, Bell, Library, Bookmark, Sparkles, BookOpen, Atom, GraduationCa
 import { Link, useRouter } from 'expo-router';
 import { getBooks } from '@/services/bookService';
 import { LoaderContext } from '@/context/LoaderContext';
-
-interface Book {
-  id: number;
-  title: string;
-  download_count: number;
-  authors: { name: string }[];
-  subjects: string[];
-  formats: {
-    "image/jpeg"?: string;
-    [key: string]: string | undefined;
-  };
-}
+import { Book } from '@/constants/data';
 
 const Home = () => {
   const router = useRouter();
@@ -147,7 +136,7 @@ const Home = () => {
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.carousel}>
-          {recentlyAddedBooks.map((book) => (
+          {topDownloadedBooks.map((book) => (
             <TouchableOpacity 
               key={book.id}
               style={styles.featuredBook}
@@ -229,7 +218,7 @@ const Home = () => {
         </View>
 
         <View style={styles.recentlyAddedContainer}>
-          {topDownloadedBooks.map((book) => (
+          {recentlyAddedBooks.map((book) => (
             <TouchableOpacity 
               key={book.id} 
               style={styles.recentBookCard}
@@ -252,7 +241,9 @@ const Home = () => {
                   {book.authors[0]?.name ?? "Unknown Author"}
                 </Text>
                 <View style={styles.bottomRow}>
-                  <Text style={styles.shelfText}>{book.download_count.toLocaleString()} Downloads</Text>
+                  <Text style={styles.shelfText}>
+                    {book.download_count?.toLocaleString()} Downloads
+                  </Text>
                 </View>
               </View>
             </TouchableOpacity>
@@ -271,7 +262,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 20,
-    paddingBottom: 100,
+    paddingBottom: 80,
   },
   header: {
     flexDirection: 'row',

@@ -1,10 +1,32 @@
-import { useRouter } from "expo-router";
+import { LoaderContext } from "@/context/LoaderContext";
+import { getBookById } from "@/services/bookService";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Bookmark, ChevronLeft, StarIcon } from "lucide-react-native"
+import { useContext, useEffect, useState } from "react";
 import { StyleSheet, TouchableOpacity, View, Text, Image, ScrollView } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
 const BookDetails = () => {
   const router = useRouter();
+  const { showLoader, hideLoader } = useContext(LoaderContext);
+  const { id } = useLocalSearchParams();
+  const [bookData, setBookData] = useState<any>(null);
+
+  useEffect(() => {
+    loadBook();
+  }, [])
+
+  const loadBook = async () => {
+    try {
+      showLoader();
+      const data = await getBookById(id as string);
+      setBookData(data);
+    } catch (error) {
+      console.error("Error fetching book details:", error);
+    } finally {
+      hideLoader();
+    }
+  }
   
   return (
     <SafeAreaView style={styles.container}>
@@ -27,20 +49,25 @@ const BookDetails = () => {
 
           <View style={styles.bookCover}>
             <Image
-                source={{ uri: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f' }}
+                source={{
+                  uri: bookData?.formats["image/jpeg"] ?? ""
+                }}
                 style={styles.bookImage}
             />
           </View>
 
           <View style={styles.bookInfo}>
-            <Text style={styles.bookTitle}>The Library of Infinite Chambers</Text>
-            <Text style={styles.bookAuthor}>by Jorge Luis Borges</Text>
+            <Text style={styles.bookTitle}>
+              {bookData?.title ?? "Unknown Title"}
+            </Text>
+            <Text style={styles.bookAuthor}>
+              by {bookData?.authors[0]?.name ?? "Unknown Author"}
+            </Text>
             <View style={styles.bookStatus}>
               <View style={styles.bookCategoryContainer}>
-                <Text style={styles.bookCategory}>Fantasy</Text>
-              </View>
-              <View style={styles.bookStatusContainer}>
-                <Text style={styles.bookStatusText}>Available</Text>
+                <Text style={styles.bookCategory}>
+                  {bookData?.subjects[0] ?? "General"}
+                </Text>
               </View>
             </View>
           </View>
@@ -66,22 +93,24 @@ const BookDetails = () => {
           </View>
 
           <View style={styles.bookSynopsis}>
-            <Text style={styles.synopsisTitle}>SYNOPSIS</Text>
-            <Text style={styles.synopsisText}>A poetic summary of this beautiful manuscript</Text>
+            <Text style={styles.synopsisTitle}>Summary</Text>
+            <Text style={styles.synopsisText}>
+              {bookData?.summaries?.[0] ?? "No summary available."}
+            </Text>
           </View>
 
           <View style={styles.bookAboutContainer}>
             <View style={styles.bookAboutCard}>
               <Text style={styles.aboutLabel}>Standard ISBN:</Text>
-              <Text style={styles.aboutValue}>978-2345-78</Text>
+              <Text style={styles.aboutValue}>{bookData?.id ?? "N/A"}</Text>
             </View>
             <View style={styles.bookAboutCard}>
               <Text style={styles.aboutLabel}>Translation Language:</Text>
-              <Text style={styles.aboutValue}>English</Text>
+              <Text style={styles.aboutValue}>{bookData?.languages?.[0] ?? "English"}</Text>
             </View>
             <View style={styles.bookAboutCard}>
               <Text style={styles.aboutLabel}>Total Library Copies:</Text>
-              <Text style={styles.aboutValue}>1 volumes</Text>
+              <Text style={styles.aboutValue}>{bookData?.copies ?? "1"}</Text>
             </View>
           </View>
 

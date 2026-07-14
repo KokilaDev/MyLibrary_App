@@ -1,4 +1,4 @@
-import { CATEGORY_MAP } from "@/constants/categories";
+import { CATEGORY_MAP } from "@/constants/data";
 import { LoaderContext } from "@/context/LoaderContext";
 import { getBooks } from "@/services/bookService";
 import { useRouter } from "expo-router"

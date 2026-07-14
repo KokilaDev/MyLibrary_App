@@ -1,28 +1,25 @@
-import { CATEGORIES, CATEGORY_MAP } from "@/constants/categories";
+import { Book, CATEGORIES, CATEGORY_MAP } from "@/constants/data";
 import { LoaderContext } from "@/context/LoaderContext";
 import { getBooks } from "@/services/bookService";
 import { router, useLocalSearchParams } from "expo-router";
 import { Search } from "lucide-react-native";
 import { useContext, useEffect, useState } from "react";
-import { StyleSheet, ScrollView, View, Text, TextInput, TouchableOpacity, Image } from "react-native"
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-interface Book {
-  id: number;
-  title: string;
-  authors: { name: string }[];
-  subjects: string[];
-  formats: {
-    "image/jpeg"?: string;
-    [key: string]: string | undefined;
-  };
-}
 
 const Books = () => {
   const { category } = useLocalSearchParams();
   const { showLoader, hideLoader } = useContext(LoaderContext);
   const [selectedCategory, setSelectedCategory] = useState(
-    typeof category === "string" ? category : "All"
+    typeof category === "string" ? category : "All",
   );
   const [books, setBooks] = useState<Book[]>([]);
 
@@ -46,34 +43,40 @@ const Books = () => {
     } finally {
       hideLoader();
     }
-  }
+  };
 
-  const filteredBooks = selectedCategory === "All"
-    ? books
-    : books.filter((book: any) => {
-      const keywords = CATEGORY_MAP[selectedCategory as keyof typeof CATEGORY_MAP];
-      return book.subjects.some((subject: string) =>
-        keywords.some(keyword => 
-          subject.toLowerCase().includes(keyword.toLowerCase())
-        )
-      )
-    });
+  const filteredBooks =
+    selectedCategory === "All"
+      ? books
+      : books.filter((book: any) => {
+          const keywords =
+            CATEGORY_MAP[selectedCategory as keyof typeof CATEGORY_MAP];
+          return book.subjects.some((subject: string) =>
+            keywords.some((keyword) =>
+              subject.toLowerCase().includes(keyword.toLowerCase()),
+            ),
+          );
+        });
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
         <View style={styles.header}>
           <View>
             <Text style={styles.headerText}>All Books</Text>
-            <Text style={styles.subheaderText}>Explore our collection of books</Text>
+            <Text style={styles.subheaderText}>
+              Explore our collection of books
+            </Text>
           </View>
         </View>
 
         <View style={styles.searchContainer}>
           <Search size={20} color="#999999" style={styles.searchIcon} />
-          <TextInput 
-            placeholder="Search books or authors..." 
+          <TextInput
+            placeholder="Search books or authors..."
             placeholderTextColor="#999999"
             style={styles.searchInput}
           />
@@ -109,26 +112,28 @@ const Books = () => {
         </ScrollView>
 
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Showing {filteredBooks.length} Books</Text>
+          <Text style={styles.sectionTitle}>
+            Showing {filteredBooks.length} Books
+          </Text>
         </View>
 
         <View style={styles.bookContainer}>
           {filteredBooks.map((book) => (
-            <TouchableOpacity 
-              key={book.id} 
+            <TouchableOpacity
+              key={book.id}
               style={styles.bookCard}
               onPress={() => {
-                router.push({ 
-                  pathname: "/bookDetails", 
-                  params: { 
-                    id: book.id, 
-                  } 
+                router.push({
+                  pathname: "/bookDetails",
+                  params: {
+                    id: book.id,
+                  },
                 });
               }}
             >
               <Image
                 source={{
-                  uri: book.formats["image/jpeg"]
+                  uri: book.formats["image/jpeg"],
                 }}
                 style={styles.bookCover}
               />
@@ -159,9 +164,9 @@ const Books = () => {
           ))}
         </View>
       </ScrollView>
-    </SafeAreaView>          
-  )
-}
+    </SafeAreaView>
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -190,14 +195,14 @@ const styles = StyleSheet.create({
     fontFamily: "Poppins-Regular",
   },
   searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#f2f2f2',
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f2f2f2",
     borderRadius: 16,
     paddingHorizontal: 16,
     height: 48,
     marginBottom: 24,
-    shadowColor: '#999999',
+    shadowColor: "#999999",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.04,
     shadowRadius: 8,
@@ -207,15 +212,15 @@ const styles = StyleSheet.create({
   },
   searchInput: {
     flex: 1,
-    color: '#999999',
+    color: "#999999",
     fontSize: 14,
   },
   categoryContainer: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 24,
   },
   categoryCard: {
-    backgroundColor: '#f2f2f2',
+    backgroundColor: "#f2f2f2",
     borderRadius: 16,
     paddingVertical: 8,
     paddingHorizontal: 16,
@@ -223,25 +228,25 @@ const styles = StyleSheet.create({
   },
   categoryCardText: {
     fontSize: 14,
-    color: '#1A181B',
+    color: "#1A181B",
     fontFamily: "Poppins-Regular",
   },
   activeCategoryCard: {
-    backgroundColor: "#1A181B"
+    backgroundColor: "#1A181B",
   },
   activeCategoryCardText: {
     color: "#FFFFFF",
     fontFamily: "Poppins-SemiBold",
   },
   sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 15,
-    fontWeight: '600',
-    color: '#666',
+    fontWeight: "600",
+    color: "#666",
   },
   bookContainer: {
     marginBottom: 40,
@@ -257,8 +262,8 @@ const styles = StyleSheet.create({
     borderColor: "#ffffff",
     shadowColor: "#000",
     shadowOffset: {
-        width: 0,
-        height: 2,
+      width: 0,
+      height: 2,
     },
     shadowOpacity: 0.08,
     shadowRadius: 6,
@@ -318,7 +323,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#e5e5e5",
     marginVertical: 6,
   },
-  buttonContainer:{
+  buttonContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -353,4 +358,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Books
+export default Books;

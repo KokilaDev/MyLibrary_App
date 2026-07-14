@@ -1,13 +1,16 @@
 import { auth, db } from "@/services/firebase";
-import { useRouter } from "expo-router";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { addDoc, collection, serverTimestamp, doc, getDoc, updateDoc } from "firebase/firestore";
 import { ChevronLeft, } from "lucide-react-native";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, StyleSheet, TextInput, TouchableOpacity, View, Text, Alert } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
 const ManageBook = () => {
   const router = useRouter();
+  const { id, mode } = useLocalSearchParams();
+  const isEditMode = mode === 'edit';
+
   const [title, setTitle] = useState('');
   const [isbn, setIsbn] = useState("");
   const [category, setCategory] = useState('Novel');
@@ -23,6 +26,33 @@ const ManageBook = () => {
     "#4E342E",
   ];
 
+  useEffect(() => {
+    if (isEditMode && id) {
+      loadBook();
+    }
+  }, [id]);
+
+  const loadBook = async () => {
+    try {
+      const bookRef = doc(db, "drafts", id as string);
+
+      const snapshot = await getDoc(bookRef);
+
+      if (snapshot.exists()) {
+        const bookData = snapshot.data();
+
+        setTitle(bookData.title);
+        setCategory(bookData.category);
+        setIsbn(bookData.isbn);
+        setStory(bookData.story);
+        setCoverColor(bookData.coverColor);
+      }
+
+    } catch (error) {
+      console.error("Error loading book:", error);
+    }
+  }
+
   const handleSave = async () => {
     if (!title || !story) {
       Alert.alert('Error', 'Title and Story are required fields.');
@@ -30,21 +60,39 @@ const ManageBook = () => {
     }
 
     try {  
-      const user = auth.currentUser;
+      if (isEditMode && id) {
+        await updateDoc(
+          doc(db, "drafts", id as string), 
+          {
+            title,
+            category,
+            isbn,
+            story,
+            coverColor,
+            updatedAt: serverTimestamp(),
+          }
+        );
 
-      await addDoc(collection(db, "drafts"), {
-        title,
-        category,
-        isbn,
-        story,
-        coverColor,
-        authorId: user?.uid,
-        authorName: user?.displayName,
-        status: "draft",
-        createdAt: serverTimestamp(),
-      })
+        Alert.alert('Success', 'Draft updated!');
 
-      Alert.alert('Success', 'Book saved as draft!');
+      } else {  
+        const user = auth.currentUser;
+
+        await addDoc(collection(db, "drafts"), {
+          title,
+          category,
+          isbn,
+          story,
+          coverColor,
+          authorId: user?.uid,
+          authorName: user?.displayName,
+          status: "draft",
+          createdAt: serverTimestamp(),
+        })
+
+        Alert.alert('Success', 'Book saved as draft!');
+      }
+
       router.back();
 
     } catch (error) {
@@ -60,21 +108,38 @@ const ManageBook = () => {
     }
     
     try {
-      const user = auth.currentUser;
+      if (isEditMode && id) {
+        await updateDoc(
+          doc(db, "published", id as string),
+          {
+            title,
+            category,
+            isbn,
+            story,
+            coverColor,
+            updatedAt: serverTimestamp(),
+          }
+        );
 
-      await addDoc(collection(db, "published"), {
-        title,
-        category,
-        isbn,
-        story,
-        coverColor,
-        authorId: user?.uid,
-        authorName: user?.displayName,
-        status: "published",
-        createdAt: serverTimestamp(),
-      });
+        Alert.alert('Success', 'Book updated and published!');
 
-      Alert.alert('Success', 'Book published successfully!');
+      } else {  
+        const user = auth.currentUser;
+
+        await addDoc(collection(db, "published"), {
+          title,
+          category,
+          isbn,
+          story,
+          coverColor,
+          authorId: user?.uid,
+          authorName: user?.displayName,
+          status: "published",
+          createdAt: serverTimestamp(),
+        });
+
+        Alert.alert('Success', 'Book published successfully!');}
+
       router.back();
 
     } catch (error) {
@@ -92,7 +157,9 @@ const ManageBook = () => {
             <ChevronLeft size={24} color="#3D2B1F" />
           </TouchableOpacity>
           <View>
-            <Text style={styles.headerTitle}>Add Books</Text>
+            <Text style={styles.headerTitle}>
+              {isEditMode ? "Edit Book" : "Add Book"}
+            </Text>
             <Text style={styles.subHeaderTitle}>Make your book collection even better</Text>
           </View>
         </View>
@@ -171,10 +238,14 @@ const ManageBook = () => {
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-              <Text style={styles.saveButtonText}>Save as Draft</Text>
+              <Text style={styles.saveButtonText}>
+                {isEditMode ? "Update as Draft" : "Save as Draft"}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.publishButton} onPress={handlePublish}>
-              <Text style={styles.publishButtonText}>Publish</Text>
+              <Text style={styles.publishButtonText}>
+                {isEditMode ? "Update & Publish" : "Publish"}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

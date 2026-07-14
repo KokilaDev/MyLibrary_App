@@ -84,3 +84,19 @@ export const CATEGORY_MAP = {
     "graphic"
   ]
 };
+
+export interface Book {
+  id: number;
+  title: string;
+  authors: {
+    name: string;
+  }[];
+  subjects: string[];
+  summaries?: string[];
+  download_count?: number;
+  languages?: string[];
+  formats: {
+    "image/jpeg"?: string;
+    [key: string]: string | undefined;
+  };
+}

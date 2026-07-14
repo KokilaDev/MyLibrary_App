@@ -17,3 +17,19 @@ export const getBooks = async (search = "") => {
     return [];
   }
 }
+
+export const getBookById = async (id: string) => {
+  try {
+    const response = await fetch(`https://gutendex.com/books/${id}`);
+
+    if (!response.ok) {
+      throw new Error("Failed to fetch book by ID");
+    }
+
+    return await response.json();
+
+  } catch (error) {
+    console.error("Error fetching book by ID:", error);
+    throw error;
+  }
+}

@@ -1,13 +1,15 @@
+import { LoaderContext } from "@/context/LoaderContext";
 import { db } from "@/services/firebase";
 import { useFocusEffect, useRouter } from "expo-router"
-import { addDoc, collection, deleteDoc, getDocs, doc, getDoc } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, getDocs, doc, getDoc, setDoc } from "firebase/firestore";
 import { BookMarked, Pen, Plus, Trash2, Upload } from "lucide-react-native";
-import { useCallback, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Image, Alert } from "react-native"
+import { useCallback, useContext, useState } from "react";
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const MyBooks = () => {
   const router = useRouter();
+  const { showLoader, hideLoader } = useContext(LoaderContext);
   const [draftBooks, setDraftBooks] = useState<any[]>([]);
   const [publishedBooks, setPublishedBooks] = useState<any[]>([]);
   const isEmpty = 
@@ -23,6 +25,7 @@ const MyBooks = () => {
 
   const getDraftBooks = async () => {
     try {
+      showLoader();
       const snapshot = await getDocs(collection(db, "drafts"));
 
       const books = snapshot.docs.map(doc => ({
@@ -34,11 +37,14 @@ const MyBooks = () => {
 
     } catch (error) {
       console.error("Error fetching draft books:", error);
+    } finally {
+      hideLoader();
     }
   }
 
   const getPublishedBooks = async () => {
     try {
+      showLoader();
       const snapshot = await getDocs(collection(db, "published"));
 
       const books = snapshot.docs.map(doc => ({
@@ -50,6 +56,8 @@ const MyBooks = () => {
 
     } catch (error) {
       console.error("Error fetching published books:", error);
+    } finally {
+      hideLoader();
     }
   }
 
@@ -80,6 +88,67 @@ const MyBooks = () => {
       Alert.alert("Error", "Failed to publish draft.");
     }
   };
+
+  const deleteDraft = async (bookId: string) => {
+    Alert.alert(
+      "Delete Draft",
+      "Are you sure you want to delete this draft?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", 
+          onPress: async () => {
+            try {
+              await deleteDoc(doc(db, "drafts", bookId));
+              Alert.alert("Success", "Draft deleted.");
+              getDraftBooks();
+            } catch (error) {
+              console.error("Error deleting draft:", error);
+              Alert.alert("Error", "Failed to delete draft.");
+            }
+          }
+        }
+      ]
+    );
+  }
+
+  const deletePublishedBook = async (bookId: string) => {
+    Alert.alert(
+      "Delete Published Book",
+      "Are you sure you want to delete this published book?",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Delete", style: "destructive", 
+          onPress: async () => {
+            try {
+              await deleteDoc(doc(db, "published", bookId));
+              Alert.alert("Success", "Book deleted.");
+              getPublishedBooks();
+            } catch (error) {
+              console.error("Error deleting published book:", error);
+              Alert.alert("Error", "Failed to delete published book.");
+            }
+          }
+        },
+        { text: "Move to Drafts", style: "default",
+          onPress: async () => {
+            try {
+              const publishedRef = doc(db, "published", bookId);
+              const bookSnap = await getDoc(publishedRef);
+              if (!bookSnap.exists()) return;
+              await setDoc(doc(db, "drafts", bookId), bookSnap.data());
+              await deleteDoc(publishedRef);
+              Alert.alert("Success", "Book moved to drafts.");
+              getPublishedBooks();
+              getDraftBooks();
+            } catch (error) {
+              console.error("Error moving book to drafts:", error);
+              Alert.alert("Error", "Failed to move book to drafts.");
+            }
+          }
+        }
+      ]
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -131,13 +200,25 @@ const MyBooks = () => {
                     </View>
                     <View style={styles.divider}></View>
                     <View style={styles.buttonContainer}>
-                      <TouchableOpacity style={styles.button} onPress={() => publishDraft(book.id)}>
+                      <TouchableOpacity 
+                        style={styles.button} 
+                        onPress={() => publishDraft(book.id)}
+                      >
                         <Upload size={14} color="#999999" />
                       </TouchableOpacity>
-                      <TouchableOpacity style={styles.button} onPress={() => router.push('/manageBook')}>
+                      <TouchableOpacity 
+                        style={styles.button} 
+                        onPress={() => router.push({
+                          pathname: '/manageBook',
+                          params: { id: book.id, mode: 'edit' }
+                        })}
+                      >
                         <Pen size={14} color="#999999" />
                       </TouchableOpacity>
-                      <TouchableOpacity style={styles.button}>
+                      <TouchableOpacity 
+                        style={styles.button} 
+                        onPress={() => deleteDraft(book.id)}
+                      >
                         <Trash2 size={14} color="#999999" />
                       </TouchableOpacity>
                     </View>
@@ -175,10 +256,19 @@ const MyBooks = () => {
                     </View>
                     <View style={styles.divider}></View>
                     <View style={styles.buttonContainer}>
-                      <TouchableOpacity style={styles.button} onPress={() => router.push('/manageBook')}>
+                      <TouchableOpacity 
+                        style={styles.button} 
+                        onPress={() => router.push({
+                          pathname: '/manageBook',
+                          params: { id: book.id, mode: 'edit' }
+                        })}
+                      >
                         <Pen size={14} color="#999999" />
                       </TouchableOpacity>
-                      <TouchableOpacity style={styles.button}>
+                      <TouchableOpacity 
+                        style={styles.button} 
+                        onPress={() => deletePublishedBook(book.id)}
+                      >
                         <Trash2 size={14} color="#999999" />
                       </TouchableOpacity>
                     </View>
