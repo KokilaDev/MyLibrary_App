@@ -1,7 +1,7 @@
 import { useLoader } from "@/hooks/useLoader";
 import { login } from "@/services/authService";
 import { router } from "expo-router"
-import { BookText, Eye, LockIcon, Mail } from "lucide-react-native";
+import { BookText, Eye, EyeOff, LockIcon, Mail } from "lucide-react-native";
 import { useState } from "react";
 import { View, Text, Alert, TextInput, Keyboard, TouchableWithoutFeedback, Pressable, TouchableOpacity, StyleSheet } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -9,6 +9,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+
+  const [showPassword, setShowPassword] = useState(false);
 
   const { showLoader, hideLoader, isLoading } = useLoader();
   
@@ -67,9 +69,15 @@ const Login = () => {
                 style={styles.textInput}
                 value={password}
                 onChangeText={setPassword}
-                secureTextEntry
+                secureTextEntry={!showPassword}
               />
-              <Eye size={18} color="#999" />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                {showPassword ? (
+                  <EyeOff size={18} color="#999" />
+                ) : (
+                  <Eye size={18} color="#999" />
+                )}
+              </TouchableOpacity>
             </View>
           </View>
           <Pressable 
