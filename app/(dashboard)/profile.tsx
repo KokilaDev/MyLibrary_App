@@ -1,10 +1,49 @@
-import { Link, useRouter } from "expo-router"
-import { ChevronRight, Clock, LogOut, OptionIcon, Settings } from "lucide-react-native"
+import { UserProfileData } from "@/constants/data";
+import { LoaderContext } from "@/context/LoaderContext";
+import { auth, db } from "@/services/firebase";
+import { useRouter } from "expo-router"
+import { signOut } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { ChevronRight, Clock, LogOut, Settings } from "lucide-react-native"
+import { useContext, useEffect, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, Image, TouchableOpacity } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Profile = () => {
   const router = useRouter();
+  const { showLoader, hideLoader } = useContext(LoaderContext);
+  const [userData, setUserData] = useState<UserProfileData | null>(null);
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
+
+  const fetchUser = async () => {
+    try {
+      showLoader();
+      const currentUser = auth.currentUser;
+      if (!currentUser) return;
+      const userRef = doc(db, "users", currentUser.uid);
+      const snapshot = await getDoc(userRef);
+      if (snapshot.exists()) {
+        setUserData(snapshot.data() as UserProfileData);
+      }
+      
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    } finally {
+      hideLoader();
+    }
+  }
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      router.replace("/login");
+    } catch (error) {
+      console.error("Error logging out:", error);
+    }
+  }
   
   return (
     <SafeAreaView style={styles.container}>
@@ -13,33 +52,33 @@ const Profile = () => {
         <View style={styles.profileHeader}>
           <View style={styles.imageContainer}>
             <Image
-                source={{ uri: "https://images.unsplash.com/photo-1494790108377-be9c29b29330" }}
+                source={{ uri: userData?.profileImage }}
                 style={styles.profileImage}
             />
             <View style={styles.activeStatus} />
           </View>
           <View style={styles.infoContainer}>
-            <Text style={styles.name}>Kokila Dewmini</Text>
-            <Text style={styles.email}>kokila@gmail.com</Text>
+            <Text style={styles.name}>{userData?.name || "User Name"}</Text>
+            <Text style={styles.email}>{userData?.email || "user@example.com"}</Text>
             <View style={styles.usernameContainer}>
-              <Text style={styles.username}>Dew</Text>
+              <Text style={styles.username}>{userData?.username || "username"}</Text>
             </View>
           </View>
         </View>
 
         <View style={styles.statusContainer}>
           <View style={styles.statusCard}>
-            <Text style={styles.statusValue}>4</Text>
+            <Text style={styles.statusValue}>{userData?.readBooks || 0}</Text>
             <Text style={styles.statusText}>Read</Text>
           </View>
           <View style={styles.divider}></View>
           <View style={styles.statusCard}>
-            <Text style={styles.statusValue}>2</Text>
+            <Text style={styles.statusValue}>{userData?.borrowedBooks || 0}</Text>
             <Text style={styles.statusText}>Borrowed</Text>
           </View>
           <View style={styles.divider}></View>
           <View style={styles.statusCard}>
-            <Text style={styles.statusValue}>3</Text>
+            <Text style={styles.statusValue}>{userData?.favourites || 0}</Text>
             <Text style={styles.statusText}>Favourites</Text>
           </View>
         </View>
@@ -55,7 +94,7 @@ const Profile = () => {
             <Text style={styles.optionText}>Settings & Preferences</Text>
             <ChevronRight size={20} color="#999999" style={styles.arrow}/>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.optionCard} onPress={() => {router.push("/")}}>
+          <TouchableOpacity style={styles.optionCard} onPress={handleLogout}>
             <LogOut size={20} color="#999999" style={styles.optionIcon}/>
             <Text style={styles.optionText}>Logout</Text>
             <ChevronRight size={20} color="#999999" style={styles.arrow}/>

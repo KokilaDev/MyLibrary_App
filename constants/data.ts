@@ -100,3 +100,16 @@ export interface Book {
     [key: string]: string | undefined;
   };
 }
+
+export interface UserProfileData {
+  name: string;
+  email: string;
+  username?: string;
+  profileImage?: string;
+
+  readBooks?: number;
+  borrowedBooks?: number;
+  favourites?: number;
+
+  roles?: string;
+}

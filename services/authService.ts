@@ -22,8 +22,13 @@ export const registerUser = async (
 
   await setDoc(doc(db, "users", userCredentials.user.uid), {
     name: name,
+    username: name.split(" ")[0],
+    email: email,
     roles: role,
-    email,
+    profileImage: "https://images.unsplash.com/photo-1494790108377-be9c29b29330",
+    readBooks: 0,
+    borrowedBooks: 0,
+    favourites: 0,
     createdAt: new Date(),
   })
 
