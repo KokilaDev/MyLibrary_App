@@ -1,25 +1,63 @@
-import { router } from "expo-router";
+import { CATEGORIES, CATEGORY_MAP } from "@/constants/categories";
+import { LoaderContext } from "@/context/LoaderContext";
+import { getBooks } from "@/services/bookService";
+import { router, useLocalSearchParams } from "expo-router";
 import { Search } from "lucide-react-native";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { StyleSheet, ScrollView, View, Text, TextInput, TouchableOpacity, Image } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const Books = () => {
-  const categories = [
-    "All",
-    "Fantasy",
-    "Novel",
-    "Science",
-    "Education",
-    "History",
-    "Business",
-    "Technology",
-    "Biography",
-    "Children",
-    "Comics",
-  ];
+interface Book {
+  id: number;
+  title: string;
+  authors: { name: string }[];
+  subjects: string[];
+  formats: {
+    "image/jpeg"?: string;
+    [key: string]: string | undefined;
+  };
+}
 
-  const [selectedCategory, setSelectedCategory] = useState("All");
+const Books = () => {
+  const { category } = useLocalSearchParams();
+  const { showLoader, hideLoader } = useContext(LoaderContext);
+  const [selectedCategory, setSelectedCategory] = useState(
+    typeof category === "string" ? category : "All"
+  );
+  const [books, setBooks] = useState<Book[]>([]);
+
+  useEffect(() => {
+    if (typeof category === "string") {
+      setSelectedCategory(category);
+    }
+  }, [category]);
+
+  useEffect(() => {
+    loadBooks();
+  }, []);
+
+  const loadBooks = async () => {
+    try {
+      showLoader();
+      const data = await getBooks();
+      setBooks(data);
+    } catch (error) {
+      console.error("Error fetching books:", error);
+    } finally {
+      hideLoader();
+    }
+  }
+
+  const filteredBooks = selectedCategory === "All"
+    ? books
+    : books.filter((book: any) => {
+      const keywords = CATEGORY_MAP[selectedCategory as keyof typeof CATEGORY_MAP];
+      return book.subjects.some((subject: string) =>
+        keywords.some(keyword => 
+          subject.toLowerCase().includes(keyword.toLowerCase())
+        )
+      )
+    });
 
   return (
     <SafeAreaView style={styles.container}>
@@ -46,7 +84,7 @@ const Books = () => {
           showsHorizontalScrollIndicator={false}
           style={styles.categoryContainer}
         >
-          {categories.map((category) => {
+          {CATEGORIES.map((category) => {
             const isSelected = selectedCategory === category;
             return (
               <TouchableOpacity
@@ -71,44 +109,45 @@ const Books = () => {
         </ScrollView>
 
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Showing 9 Books</Text>
+          <Text style={styles.sectionTitle}>Showing {filteredBooks.length} Books</Text>
         </View>
 
         <View style={styles.bookContainer}>
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((item) => (
+          {filteredBooks.map((book) => (
             <TouchableOpacity 
-              key={item} 
+              key={book.id} 
               style={styles.bookCard}
-              onPress={() => {router.push("/bookDetails")}}
+              onPress={() => {
+                router.push({ 
+                  pathname: "/bookDetails", 
+                  params: { 
+                    id: book.id, 
+                  } 
+                });
+              }}
             >
               <Image
-                source={require("../../assets/books/book_2.jpg")}
+                source={{
+                  uri: book.formats["image/jpeg"]
+                }}
                 style={styles.bookCover}
               />
               <View style={styles.bookContent}>
                 <Text style={styles.bookTitle} numberOfLines={2}>
-                  The Library of Infinite Chambers
+                  {book.title}
                 </Text>
                 <Text style={styles.bookAuthor}>
-                  Jorge Luis Mercer
+                  {book.authors[0]?.name ?? "Unknown Author"}
                 </Text>
                 <View style={styles.middleRow}>
                   <View>
-                    <Text style={styles.categoryRow}>Fantasy</Text>
-                  </View>
-                  <View>
-                    <Text style={styles.bullet}>•</Text>
-                  </View>
-                  <View style={styles.ratingRow}>
-                    <Text style={styles.star}>★</Text>
-                    <Text style={styles.rating}>4.9</Text>
+                    <Text style={styles.categoryRow}>
+                      {book.subjects[0] ?? "General"}
+                    </Text>
                   </View>
                 </View>
                 <View style={styles.divider}></View>
                 <View style={styles.buttonContainer}>
-                  <View style={styles.shelfBadge}>
-                    <Text style={styles.shelfText}>Available</Text>
-                  </View>
                   <View style={styles.borrowButtonContainer}>
                     <TouchableOpacity style={styles.borrowButton}>
                       <Text style={styles.borrowButtonText}>Borrow</Text>
@@ -226,15 +265,14 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   bookCover: {
-    width: 58,
-    height: 84,
+    width: 80,
+    height: 120,
     borderRadius: 8,
     marginRight: 14,
   },
   bookContent: {
     flex: 1,
     justifyContent: "space-between",
-    height: 120,
   },
   bookTitle: {
     fontSize: 16,

@@ -191,7 +191,6 @@ const styles = StyleSheet.create({
   bookInfo: {
     flex: 1,
     justifyContent: "space-between",
-    // height: 84,
   },
   bookTitle: {
     fontSize: 16,

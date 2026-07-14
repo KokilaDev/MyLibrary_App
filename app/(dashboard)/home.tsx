@@ -1,11 +1,52 @@
-import React from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { StyleSheet, Text, View, ScrollView, Image, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Bell, Library, Bookmark, Sparkles, BookOpen, Atom, GraduationCap, ChevronRight } from 'lucide-react-native';
 import { Link, useRouter } from 'expo-router';
+import { getBooks } from '@/services/bookService';
+import { LoaderContext } from '@/context/LoaderContext';
+
+interface Book {
+  id: number;
+  title: string;
+  download_count: number;
+  authors: { name: string }[];
+  subjects: string[];
+  formats: {
+    "image/jpeg"?: string;
+    [key: string]: string | undefined;
+  };
+}
 
 const Home = () => {
   const router = useRouter();
+
+  const [books, setBooks] = useState<Book[]>([]);
+  const { showLoader, hideLoader } = useContext(LoaderContext);
+
+  useEffect(() => {
+    loadBooks();
+  }, []);
+
+  const loadBooks = async () => {
+    try {  
+      showLoader();
+      const data = await getBooks();
+      setBooks(data);
+    } catch (error) {
+      console.error("Error fetching books:", error);
+    } finally {
+      hideLoader();
+    }
+  }
+
+  const topDownloadedBooks = [...books]
+    .sort((a: any, b: any) => b.download_count - a.download_count)
+    .slice(0, 5);
+
+  const recentlyAddedBooks = [...books]
+    .sort((a: any, b: any) => b.id - a.id)
+    .slice(0, 3);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -106,58 +147,29 @@ const Home = () => {
         </View>
 
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.carousel}>
-          <TouchableOpacity 
-            style={styles.featuredBook}
-            onPress={() => {router.push("/bookDetails")}}
-          >
-            <View style={styles.mockCoverLarge}>
-              <Image 
-                source={ require("../../assets/books/book_1.jpg") } 
-                style={styles.mockCoverImage}
-              />
-            </View>
-            <Text style={styles.bookTitle} numberOfLines={1}>The Shadow of Dark Oaks</Text>
-            <Text style={styles.bookAuthor}>Marguerite Osborne</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.featuredBook}
-            onPress={() => {router.push("/bookDetails")}}
-          >
-            <View style={styles.mockCoverLarge}>
-              <Image 
-                source={ require("../../assets/books/book_1.jpg") } 
-                style={styles.mockCoverImage}
-              />
-            </View>
-            <Text style={styles.bookTitle} numberOfLines={1}>The Shadow of Dark Oaks</Text>
-            <Text style={styles.bookAuthor}>Marguerite Osborne</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.featuredBook}
-            onPress={() => {router.push("/bookDetails")}}
-          >
-            <View style={styles.mockCoverLarge}>
-              <Image 
-                source={ require("../../assets/books/book_1.jpg") } 
-                style={styles.mockCoverImage}
-              />
-            </View>
-            <Text style={styles.bookTitle} numberOfLines={1}>The Shadow of Dark Oaks</Text>
-            <Text style={styles.bookAuthor}>Marguerite Osborne</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.featuredBook}
-            onPress={() => {router.push("/bookDetails")}}
-          >
-            <View style={styles.mockCoverLarge}>
-              <Image 
-                source={ require("../../assets/books/book_1.jpg") } 
-                style={styles.mockCoverImage}
-              />
-            </View>
-            <Text style={styles.bookTitle} numberOfLines={1}>The Shadow of Dark Oaks</Text>
-            <Text style={styles.bookAuthor}>Marguerite Osborne</Text>
-          </TouchableOpacity>
+          {recentlyAddedBooks.map((book) => (
+            <TouchableOpacity 
+              key={book.id}
+              style={styles.featuredBook}
+              onPress={() => {
+                router.push({
+                  pathname: "/bookDetails",
+                  params: { id: book.id },
+                });
+              }}
+            >
+              <View style={styles.mockCoverLarge}>
+                <Image 
+                  source={{
+                    uri: book.formats["image/jpeg"]
+                  }} 
+                  style={styles.mockCoverImage}
+                />
+              </View>
+              <Text style={styles.bookTitle} numberOfLines={1}>{book.title}</Text>
+              <Text style={styles.bookAuthor}>{book.authors[0]?.name ?? "Unknown Author"}</Text>
+            </TouchableOpacity>
+          ))}
         </ScrollView>
 
         <View style={styles.sectionHeader}>
@@ -217,31 +229,30 @@ const Home = () => {
         </View>
 
         <View style={styles.recentlyAddedContainer}>
-          {[1, 2, 3].map((item) => (
+          {topDownloadedBooks.map((book) => (
             <TouchableOpacity 
-              key={item} 
+              key={book.id} 
               style={styles.recentBookCard}
-              onPress={() => {router.push("/bookDetails")}}
+              onPress={() => {
+                router.push({
+                  pathname: "/bookDetails",
+                  params: { id: book.id },
+                })
+              }}
             >
               <Image
-                source={require("../../assets/books/book_2.jpg")}
+                source={{ uri: book.formats["image/jpeg"] }}
                 style={styles.recentBookCover}
               />
               <View style={styles.recentBookContent}>
                 <Text style={styles.recentBookTitle} numberOfLines={2}>
-                  The Library of Infinite Chambers
+                  {book.title}
                 </Text>
                 <Text style={styles.recentBookAuthor}>
-                  Jorge Luis Mercer
+                  {book.authors[0]?.name ?? "Unknown Author"}
                 </Text>
                 <View style={styles.bottomRow}>
-                  <View style={styles.ratingRow}>
-                    <Text style={styles.star}>★</Text>
-                    <Text style={styles.rating}>4.9</Text>
-                  </View>
-                  <View style={styles.shelfBadge}>
-                    <Text style={styles.shelfText}>ON SHELF</Text>
-                  </View>
+                  <Text style={styles.shelfText}>{book.download_count.toLocaleString()} Downloads</Text>
                 </View>
               </View>
             </TouchableOpacity>

@@ -1,10 +1,62 @@
+import { CATEGORY_MAP } from "@/constants/categories";
+import { LoaderContext } from "@/context/LoaderContext";
+import { getBooks } from "@/services/bookService";
 import { useRouter } from "expo-router"
 import { Atom, TrendingUp, BookOpen, ChevronLeft, Compass, GraduationCap, Sparkles, Cpu, UserRound, Smile, Image } from "lucide-react-native";
+import { useContext, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, View, TouchableOpacity, Text } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
 
+interface Book {
+  id: number;
+  subjects: string[];
+}
+
 const Category = () => {
   const router = useRouter();
+  const { showLoader, hideLoader } = useContext(LoaderContext);
+  const [books, setBooks] = useState<Book[]>([]);
+
+  const categories = [
+    { name: "Fantasy", icon: Sparkles },
+    { name: "Novel", icon: BookOpen },
+    { name: "Science", icon: Atom },
+    { name: "Education", icon: GraduationCap },
+    { name: "History", icon: Compass },
+    { name: "Business", icon: TrendingUp },
+    { name: "Technology", icon: Cpu },
+    { name: "Biography", icon: UserRound },
+    { name: "Children", icon: Smile },
+    { name: "Comics", icon: Image },
+  ];
+
+  useEffect(() => {
+    loadBooks();
+  }, []);
+
+  const loadBooks = async () => {
+    try {
+      showLoader();
+      const data = await getBooks();
+      setBooks(data);
+    } catch (error) {
+      console.error("Error fetching books:", error);
+    } finally {
+      hideLoader();
+    }
+  }
+
+  const getBookCountByCategory = (category: string) => {
+    const keywords = CATEGORY_MAP[category as keyof typeof CATEGORY_MAP];
+
+    return books.filter((book) =>
+      book.subjects.some((subject) =>
+        keywords.some((keyword) =>
+          subject.toLowerCase().includes(keyword.toLowerCase())
+        )
+      )
+    ).length;
+  }
   
   return (
     <SafeAreaView style={styles.container}>
@@ -21,76 +73,32 @@ const Category = () => {
         </View>
 
         <View style={styles.categoryContainer}>
-          <TouchableOpacity style={styles.categoryButton}>
-            <View style={styles.iconContainer}>
-              <Sparkles size={20} color="#1A181B" />
-            </View>
-            <Text style={styles.title}>Fantasy</Text>
-            <Text style={styles.bookCount}>14 Books</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.categoryButton}>
-            <View style={styles.iconContainer}>
-              <BookOpen size={20} color="#1A181B" />
-            </View>
-            <Text style={styles.title}>Novel</Text>
-            <Text style={styles.bookCount}>22 Books</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.categoryButton}>
-            <View style={styles.iconContainer}>
-              <Atom size={20} color="#1A181B" />
-            </View>
-            <Text style={styles.title}>Science</Text>
-            <Text style={styles.bookCount}>9 Books</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.categoryButton}>
-            <View style={styles.iconContainer}>
-              <GraduationCap size={20} color="#1A181B" />
-            </View>
-            <Text style={styles.title}>Education</Text>
-            <Text style={styles.bookCount}>18 Books</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.categoryButton}>
-            <View style={styles.iconContainer}>
-              <Compass size={20} color="#1A181B" />
-            </View>
-            <Text style={styles.title}>History</Text>
-            <Text style={styles.bookCount}>12 Books</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.categoryButton}>
-            <View style={styles.iconContainer}>
-              <TrendingUp size={20} color="#1A181B" />
-            </View>
-            <Text style={styles.title}>Business</Text>
-            <Text style={styles.bookCount}>15 Books</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.categoryButton}>
-            <View style={styles.iconContainer}>
-              <Cpu size={20} color="#1A181B" />
-            </View>
-            <Text style={styles.title}>Technology</Text>
-            <Text style={styles.bookCount}>20 Books</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.categoryButton}>
-            <View style={styles.iconContainer}>
-              <UserRound size={20} color="#1A181B" />
-            </View>
-            <Text style={styles.title}>Biography</Text>
-            <Text style={styles.bookCount}>11 Books</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.categoryButton}>
-            <View style={styles.iconContainer}>
-              <Smile size={20} color="#1A181B" />
-            </View>
-            <Text style={styles.title}>Self-help</Text>
-            <Text style={styles.bookCount}>8 Books</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.categoryButton}>
-            <View style={styles.iconContainer}>
-              <Image size={20} color="#1A181B" />
-            </View>
-            <Text style={styles.title}>Art</Text>
-            <Text style={styles.bookCount}>10 Books</Text>
-          </TouchableOpacity>
+
+          {categories.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <TouchableOpacity
+                key={item.name}
+                style={styles.categoryButton}
+                onPress={() => 
+                  router.push({
+                    pathname: "/(dashboard)/books",
+                    params: { category: item.name },
+                  })
+                }
+              >
+                <View style={styles.iconContainer}>
+                  <Icon size={20} color="#1A181B" />
+                </View>
+                <Text style={styles.title}>{item.name}</Text>
+                <Text style={styles.bookCount}>
+                  {getBookCountByCategory(item.name)} Books
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+
         </View>
         
       </ScrollView>
