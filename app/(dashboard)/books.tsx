@@ -1,6 +1,6 @@
 import { Book, CATEGORIES, CATEGORY_MAP } from "@/constants/data";
 import { LoaderContext } from "@/context/LoaderContext";
-import { getBooks } from "@/services/bookService";
+import { borrowBook, getBooks, getBorrowedBooks } from "@/services/bookService";
 import { router, useLocalSearchParams } from "expo-router";
 import { Search } from "lucide-react-native";
 import { useContext, useEffect, useState } from "react";
@@ -22,6 +22,7 @@ const Books = () => {
     typeof category === "string" ? category : "All",
   );
   const [books, setBooks] = useState<Book[]>([]);
+  const [borrowedIds, setBorrowedIds] = useState<string[]>([]);
 
   useEffect(() => {
     if (typeof category === "string") {
@@ -31,6 +32,7 @@ const Books = () => {
 
   useEffect(() => {
     loadBooks();
+    loadBorrowedIds();
   }, []);
 
   const loadBooks = async () => {
@@ -45,6 +47,12 @@ const Books = () => {
     }
   };
 
+  const loadBorrowedIds = async () => {
+    const userId = "USER_ID";
+    const data = await getBorrowedBooks(userId);
+    setBorrowedIds(data.map(item => item.id.toString()));
+  }
+
   const filteredBooks =
     selectedCategory === "All"
       ? books
@@ -57,6 +65,19 @@ const Books = () => {
             ),
           );
         });
+
+  const handleBorrow = async (book: Book) => {
+    try {
+      const userId = "USER_ID";
+      await borrowBook(book, userId);
+      setBorrowedIds(prev => [
+        ...prev,
+        book.id.toString()
+      ])
+    } catch (error) {
+      console.error("Error borrowing book:", error);
+    }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -154,8 +175,18 @@ const Books = () => {
                 <View style={styles.divider}></View>
                 <View style={styles.buttonContainer}>
                   <View style={styles.borrowButtonContainer}>
-                    <TouchableOpacity style={styles.borrowButton}>
-                      <Text style={styles.borrowButtonText}>Borrow</Text>
+                    <TouchableOpacity 
+                      style={styles.borrowButton}
+                      disabled={borrowedIds.includes(book.id.toString())}
+                      onPress={() => handleBorrow(book)}
+                    >
+                      <Text style={styles.borrowButtonText}>
+                        {
+                          borrowedIds.includes(book.id.toString())
+                            ? "Borrowed"
+                            : "Borrow"
+                        }
+                      </Text>
                     </TouchableOpacity>
                   </View>
                 </View>

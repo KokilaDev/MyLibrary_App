@@ -1,7 +1,8 @@
+import { Book } from "@/constants/data";
 import { LoaderContext } from "@/context/LoaderContext";
-import { getBookById } from "@/services/bookService";
+import { borrowBook, getBookById } from "@/services/bookService";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Bookmark, ChevronLeft, StarIcon } from "lucide-react-native"
+import { Bookmark, ChevronLeft } from "lucide-react-native"
 import { useContext, useEffect, useState } from "react";
 import { StyleSheet, TouchableOpacity, View, Text, Image, ScrollView } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -11,6 +12,7 @@ const BookDetails = () => {
   const { showLoader, hideLoader } = useContext(LoaderContext);
   const { id } = useLocalSearchParams();
   const [bookData, setBookData] = useState<any>(null);
+  const [borrowedIds, setBorrowedIds] = useState<string[]>([]);
 
   useEffect(() => {
     loadBook();
@@ -25,6 +27,19 @@ const BookDetails = () => {
       console.error("Error fetching book details:", error);
     } finally {
       hideLoader();
+    }
+  }
+
+  const handleBorrow = async (book: Book) => {
+    try {
+      const userId = "USER_ID";
+      await borrowBook(book, userId);
+      setBorrowedIds(prev => [
+        ...prev,
+        book.id.toString()
+      ])
+    } catch (error) {
+      console.error("Error borrowing book:", error);
     }
   }
   
@@ -75,19 +90,18 @@ const BookDetails = () => {
           <View style={styles.bookDescription}>
             <View style={styles.descriptionCard}>
               <View style={styles.ratingContainer}>
-                <StarIcon size={16} color="#999" />
-                <Text style={styles.ratingText}>5</Text>
+                <Text style={styles.ratingText}>{bookData?.download_count ?? "0"}</Text>
               </View>
-              <Text style={styles.descriptionLabel}>(1 reviews)</Text>
+              <Text style={styles.descriptionLabel}>Downloads</Text>
             </View>
             <View style={styles.divider}></View>
             <View style={styles.descriptionCard}>
-              <Text style={styles.descriptionValue}>150</Text>
+              <Text style={styles.descriptionValue}>{bookData?.pages ?? "1"}</Text>
               <Text style={styles.descriptionLabel}>Pages</Text>
             </View>
             <View style={styles.divider}></View>
             <View style={styles.descriptionCard}>
-              <Text style={styles.descriptionValue}>2026</Text>
+              <Text style={styles.descriptionValue}>{bookData?.year ?? "N/A"}</Text>
               <Text style={styles.descriptionLabel}>Published</Text>
             </View>
           </View>
@@ -115,10 +129,29 @@ const BookDetails = () => {
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.borrowButton}>
-              <Text style={styles.borrowButtonText}>Borrow Book</Text>
+            <TouchableOpacity 
+              style={styles.borrowButton}
+              disabled={borrowedIds.includes(bookData?.id.toString())}
+              onPress={() => handleBorrow(bookData)}
+            >
+              <Text style={styles.borrowButtonText}>
+                {
+                  borrowedIds.includes(bookData?.id.toString())
+                  ? "Book Borrowed"
+                  : "Borrow Book"
+                }
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.readButton} onPress={() => router.push("/readingArea")}>
+
+            <TouchableOpacity 
+              style={styles.readButton} 
+              onPress={() => router.push({
+                pathname: "/readingArea",
+                params: {
+                  id: bookData?.id,
+                },
+              })}
+            >
               <Text style={styles.readButtonText}>Continue Reading</Text>
             </TouchableOpacity>
           </View>
@@ -277,7 +310,7 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   synopsisText: {
-    fontSize: 14,
+    fontSize: 12,
     color: '#1a181b',
   },
   bookAboutContainer: {
