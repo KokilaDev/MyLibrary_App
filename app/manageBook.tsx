@@ -1,5 +1,7 @@
+import { auth, db } from "@/services/firebase";
 import { useRouter } from "expo-router";
-import { Check, ChevronLeft, Redo2, Undo2, Upload } from "lucide-react-native";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { ChevronLeft, } from "lucide-react-native";
 import { useState } from "react";
 import { ScrollView, StyleSheet, TextInput, TouchableOpacity, View, Text, Alert } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context"
@@ -21,13 +23,64 @@ const ManageBook = () => {
     "#4E342E",
   ];
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title || !story) {
       Alert.alert('Error', 'Title and Story are required fields.');
       return;
     }
-    Alert.alert('Success', 'Book catalog updated successfully!');
-    router.back();
+
+    try {  
+      const user = auth.currentUser;
+
+      await addDoc(collection(db, "drafts"), {
+        title,
+        category,
+        isbn,
+        story,
+        coverColor,
+        authorId: user?.uid,
+        authorName: user?.displayName,
+        status: "draft",
+        createdAt: serverTimestamp(),
+      })
+
+      Alert.alert('Success', 'Book saved as draft!');
+      router.back();
+
+    } catch (error) {
+      console.error("Error updating book catalog:", error);
+      Alert.alert('Error', 'Failed to save draft.');
+    }
+  };
+
+  const handlePublish = async () => {
+    if (!title || !story) {
+      Alert.alert('Error', 'Title and Story are required fields.');
+      return;
+    }
+    
+    try {
+      const user = auth.currentUser;
+
+      await addDoc(collection(db, "published"), {
+        title,
+        category,
+        isbn,
+        story,
+        coverColor,
+        authorId: user?.uid,
+        authorName: user?.displayName,
+        status: "published",
+        createdAt: serverTimestamp(),
+      });
+
+      Alert.alert('Success', 'Book published successfully!');
+      router.back();
+
+    } catch (error) {
+      console.error("Error publishing book:", error);
+      Alert.alert("Error", "Failed to publish the book.");
+    }
   };
 
   return (
@@ -120,7 +173,7 @@ const ManageBook = () => {
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
               <Text style={styles.saveButtonText}>Save as Draft</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.publishButton} onPress={handleSave}>
+            <TouchableOpacity style={styles.publishButton} onPress={handlePublish}>
               <Text style={styles.publishButtonText}>Publish</Text>
             </TouchableOpacity>
           </View>
