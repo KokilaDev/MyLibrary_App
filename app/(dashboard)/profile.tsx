@@ -45,7 +45,7 @@ const Profile = () => {
     }
   }
 
-   const getInitials = (name: string) => {
+  const getInitials = (name: string) => {
     const words = name.split(" ");
 
     if (words.length >= 2) {

@@ -55,6 +55,16 @@ const Home = () => {
     .sort((a: any, b: any) => b.id - a.id)
     .slice(0, 3);
 
+  const getInitials = (name: string) => {
+    const words = name.split(" ");
+
+    if (words.length >= 2) {
+      return (words[0][0] + words[1][0]).toUpperCase();
+    }
+
+    return words[0][0].toUpperCase();
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
@@ -73,10 +83,13 @@ const Home = () => {
             </Link>
             <Link href="/profile" asChild>
               <TouchableOpacity style={styles.notificationBtn}>
-                <Image 
+                {/* <Image 
                   source={{ uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330' }} 
                   style={styles.avatar} 
-                />
+                /> */}
+                <Text style={styles.avatarText}>
+                  {userData?.name ? getInitials(userData.name) : "U"}
+                </Text>
               </TouchableOpacity>
             </Link>
           </View>
@@ -322,7 +335,13 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     backgroundColor: '#7f7f7f',
   },
-  avatar: {
+  avatarText: {
+    textAlign: 'center',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#000',
     width: 40,
     height: 40,
     borderRadius: 20,
