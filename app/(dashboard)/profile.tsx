@@ -6,7 +6,7 @@ import { signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { ChevronRight, Clock, LogOut, Settings } from "lucide-react-native"
 import { useContext, useEffect, useState } from "react";
-import { View, Text, ScrollView, StyleSheet, Image, TouchableOpacity } from "react-native"
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from "react-native"
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const Profile = () => {
@@ -44,6 +44,17 @@ const Profile = () => {
       console.error("Error logging out:", error);
     }
   }
+
+   const getInitials = (name: string) => {
+    const words = name.split(" ");
+
+    if (words.length >= 2) {
+      return (words[0][0] + words[1][0]).toUpperCase();
+    }
+
+    return words[0][0].toUpperCase();
+  };
+
   
   return (
     <SafeAreaView style={styles.container}>
@@ -51,10 +62,14 @@ const Profile = () => {
 
         <View style={styles.profileHeader}>
           <View style={styles.imageContainer}>
-            <Image
+            {/* <Image
                 source={{ uri: userData?.profileImage }}
                 style={styles.profileImage}
-            />
+            /> */}
+            {/* <UserIcon size={100} color="#999999" style={styles.profileImage}/> */}
+            <Text style={[styles.profileImage, {textAlign: 'center', lineHeight: 100, fontSize: 36, fontWeight: 'bold', color: '#fff', backgroundColor: '#999999', borderRadius: 50}]}>
+              {userData?.name ? getInitials(userData.name) : "U"}
+            </Text>
             <View style={styles.activeStatus} />
           </View>
           <View style={styles.infoContainer}>
@@ -135,7 +150,7 @@ const styles = StyleSheet.create({
   activeStatus: {
     position: 'absolute',
     bottom: 2,
-    right: 115,
+    right: 130,
     width: 22,
     height: 22,
     borderRadius: 12,

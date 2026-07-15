@@ -32,16 +32,19 @@
           "image": "./assets/images/logo.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff",
-          // "dark": {
-          //   "backgroundColor": "#000000"
-          // }
+          "backgroundColor": "#ffffff"
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "aa84bd41-82cc-4537-a434-8e8c8cb0a93a"
+      }
     }
   }
 }

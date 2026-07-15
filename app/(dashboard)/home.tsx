@@ -5,16 +5,20 @@ import { Search, Bell, Library, Bookmark, Sparkles, BookOpen, Atom, GraduationCa
 import { Link, useRouter } from 'expo-router';
 import { getBooks } from '@/services/bookService';
 import { LoaderContext } from '@/context/LoaderContext';
-import { Book } from '@/constants/data';
+import { Book, UserProfileData } from '@/constants/data';
+import { auth, db } from '@/services/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 const Home = () => {
   const router = useRouter();
 
   const [books, setBooks] = useState<Book[]>([]);
+  const [userData, setUserData] = useState<UserProfileData | null>(null);
   const { showLoader, hideLoader } = useContext(LoaderContext);
 
   useEffect(() => {
     loadBooks();
+    fetchUser();
   }, []);
 
   const loadBooks = async () => {
@@ -26,6 +30,20 @@ const Home = () => {
       console.error("Error fetching books:", error);
     } finally {
       hideLoader();
+    }
+  }
+
+  const fetchUser = async () => {
+    try {
+      const currentUser = auth.currentUser;
+      if (!currentUser) return;
+      const userRef = doc(db, "users", currentUser.uid);
+      const snapshot = await getDoc(userRef);
+      if (snapshot.exists()) {
+        setUserData(snapshot.data() as UserProfileData);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
     }
   }
 
@@ -44,7 +62,7 @@ const Home = () => {
         <View style={styles.header}>
           <View>
             <Text style={styles.greeting}>Good Morning,</Text>
-            <Text style={styles.username}>Kokila Dewmini</Text>
+            <Text style={styles.username}>{userData?.name}</Text>
           </View>
           <View style={styles.headerActions}>
             <Link href="/notifications" asChild>

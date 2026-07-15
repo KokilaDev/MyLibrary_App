@@ -1,7 +1,7 @@
 import { LoaderContext } from "@/context/LoaderContext";
-import { db } from "@/services/firebase";
+import { auth, db } from "@/services/firebase";
 import { useFocusEffect, useRouter } from "expo-router"
-import { addDoc, collection, deleteDoc, getDocs, doc, getDoc, setDoc } from "firebase/firestore";
+import { addDoc, collection, deleteDoc, getDocs, doc, getDoc, setDoc, query, where } from "firebase/firestore";
 import { BookMarked, Pen, Plus, Trash2, Upload } from "lucide-react-native";
 import { useCallback, useContext, useState } from "react";
 import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Alert } from "react-native"
@@ -26,7 +26,16 @@ const MyBooks = () => {
   const getDraftBooks = async () => {
     try {
       showLoader();
-      const snapshot = await getDocs(collection(db, "drafts"));
+
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const q = query(
+        collection(db, "drafts"),
+        where("userId", "==", user.uid)
+      );
+      
+      const snapshot = await getDocs(q);
 
       const books = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -45,7 +54,16 @@ const MyBooks = () => {
   const getPublishedBooks = async () => {
     try {
       showLoader();
-      const snapshot = await getDocs(collection(db, "published"));
+
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const q = query(
+        collection(db, "published"),
+        where("userId", "==", user.uid)
+      );
+
+      const snapshot = await getDocs(q);
 
       const books = snapshot.docs.map(doc => ({
         id: doc.id,
@@ -74,7 +92,10 @@ const MyBooks = () => {
 
       const bookData = draftSnap.data();
 
-      await addDoc(collection(db, "published"), bookData);
+      await addDoc(collection(db, "published"), {
+        ...bookData,
+        userId: auth.currentUser?.uid,
+      });
 
       await deleteDoc(draftRef);
 
