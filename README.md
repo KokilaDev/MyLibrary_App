@@ -12,6 +12,36 @@ loaded using the <strong>Gutendex API</strong>.
 
 <section>
 
+<h2>📥 Downloads</h2>
+
+<h3>📱 Android APK</h3>
+
+<p>
+Install the latest Android application directly on your device for testing.
+</p>
+
+<p>
+<a href="https://expo.dev/artifacts/eas/5MkTRof-7jCuE0ERosFJNXHLX9r9Lz7O16r5yUY7SdQ.apk">
+Download APK
+</a>
+</p>
+
+<h3>🏪 Android App Bundle (AAB)</h3>
+
+<p>
+Download the Android App Bundle for publishing to the Google Play Store.
+</p>
+
+<p>
+<a href="https://expo.dev/artifacts/eas/lDxKaI89BeAFPL0GH_D7PtRrLWKrihbdSUpzL_vrCOE.aab">
+Download AAB
+</a>
+</p>
+
+</section>
+
+<section>
+
 <h2>✨ Features</h2>
 
 <h3>🔐 Authentication</h3>
